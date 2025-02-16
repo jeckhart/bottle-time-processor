@@ -33,6 +33,15 @@ pub async fn dummy_task(subsys: SubsystemHandle) -> miette::Result<()> {
     Ok(())
 }
 
+/// Error handling utilities
+pub mod error;
+
+/// Models for MQTT messages
+pub mod models;
+
+/// MQTT client implementation
+pub mod mqtt_client;
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -9,7 +9,7 @@ include = ["/src", "/benches", "README.md", "LICENSE"]
 license = "Apache-2.0"
 readme = "README.md"
 edition = "2021"
-rust-version = "1.67"
+rust-version = "1.70"
 documentation = "https://docs.rs/bottle-time-processor"
 repository = "https://github.com/jeckhart/bottle-time-processor"
 authors = ["John Eckhart <envoys-radius3t@icloud.com>"]
@@ -36,18 +36,28 @@ proptest = { version = "1.6", optional = true }
 miette = "7.5"
 tracing = "0.1"
 tracing-subscriber = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 # Tokio
 tokio = { version = "1.43", features = ["default","full"] }
+rumqttc = { version = "0.24", features = ["use-rustls"] }
 
 # Shutdown
 tokio-graceful-shutdown = "0.16"
 
 # Command line arguments
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.5", features = ["derive","env"] }
+
+# New dependencies
+regex = "1.10.2"
+async-trait = "0.1.77"
+
+# Added from the code block
+chrono = "0.4"
 
 [dev-dependencies]
-criterion = "0.4"
+criterion = "0.5"
 proptest = "1.1"
 
 [features]
