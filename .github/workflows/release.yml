@@ -25,6 +25,10 @@ jobs:
       github.repository_owner == 'jeckhart' &&
       github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
 
+    permissions:
+      contents: write
+      pull-requests: write
+
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag: ${{ steps.release.outputs.tag_name }}
@@ -32,13 +36,10 @@ jobs:
     steps:
       - name: Run release-please
         id: release
-        uses: google-github-actions/release-please-action@v4
+        uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          default-branch: main
-          command: manifest
-          extra-files: |
-            README.md
+          target-branch: main
 
   # Build auditable (https://github.com/rust-secure-code/cargo-auditable) binaries across os's/target's.
   build-and-release-auditable-bin:
