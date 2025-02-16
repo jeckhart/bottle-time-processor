@@ -33,6 +33,10 @@ pub async fn dummy_task(subsys: SubsystemHandle) -> miette::Result<()> {
     Ok(())
 }
 
+
+/// Error handling utilities
+pub mod error;
+
 #[cfg(test)]
 mod tests {
     use super::*;

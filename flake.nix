@@ -92,7 +92,8 @@
           };
 
           doCheck = false;
-          cargoSha256 = "sha256-FmsD3ajMqpPrTkXCX2anC+cmm0a2xuP+3FHqzj56Ma4=";
+          useFetchCargoVendor = true;
+          cargoHash = "sha256-y85quJ2jnkyGOIFeMGAbWjkgLNDvYc9ddRZIPiWCyMU=";
         };
 
         formatter = pkgs.alejandra;
