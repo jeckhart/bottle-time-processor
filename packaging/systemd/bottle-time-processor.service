@@ -1,0 +1,16 @@
+[Unit]
+Description=Bottle Time Processor Daemon
+After=network.target
+
+[Service]
+# The daemon runs in the foreground, so use Type=simple.
+Type=simple
+# Adjust the path to the binary as needed.
+ExecStart=/usr/bin/bottle-time-processor
+
+# Restart the service automatically on failure.
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
