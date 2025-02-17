@@ -1,0 +1,46 @@
+{%- extends "base.tera" -%}
+
+{%- block src_uri -%}{% raw -%}"
+  https://github.com/jeckhart/${PN}/archive/refs/tags/v${PV}.tar.gz -> ${P}.tar.gz
+  $(cargo_crate_uris ${CRATES})"{%- endraw %}{%- endblock %}
+
+{%- block homepage -%}
+  https://github.com/jeckhart/${PN}
+{%- endblock -%}
+
+{% block variables -%}
+USE="systemd"
+DEPEND=""
+RDEPEND="
+  acct-group/bottle-time-processor
+  acct-user/bottle-time-processor
+"
+BDEPEND=""
+
+# rust does not use *FLAGS from make.conf, silence portage warning
+# update with proper path to binaries this crate installs, omit leading /
+QA_FLAGS_IGNORED="usr/bin/${PN}"
+
+#
+
+{%- endblock -%}
+
+{% block phases -%}
+#
+# Install the built binary and systemd unit file.
+src_install() {
+  cargo_src_install
+
+  # Optionally install the systemd unit file.
+  if use systemd; then
+	# Install the systemd unit file.
+    systemd_dounit "${FILESDIR}/${PN}.service"
+
+	# Install the configuration file as a dropin.
+	systemd_install_serviced "${FILESDIR}/${PN}.service.conf"
+    # Since we want to put auth stuff in this file, set it to not be world readable
+    fperms 0600 /etc/systemd/system/"${PN}".service.d/00gentoo.conf
+  fi
+
+}
+{%- endblock -%}
