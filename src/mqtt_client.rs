@@ -8,7 +8,7 @@ use rumqttc::{AsyncClient, EventLoop, MqttOptions, QoS};
 /// This module provides the core MQTT client functionality, including message
 /// filtering and subscription management.
 use std::collections::HashMap;
-use std::{fmt::Debug, sync::Arc};
+use std::{fmt::Debug, future::Future, pin::Pin, sync::Arc};
 use tokio::sync::Mutex;
 
 /// Trait for message filtering
@@ -56,7 +56,8 @@ impl std::fmt::Debug for FunctionFilter {
 }
 
 /// Callback type for message handlers
-type MessageCallback = Box<dyn Fn(String) -> Result<()> + Send + Sync>;
+type MessageCallback =
+    Box<dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<()>> + Send>> + Send + Sync>;
 
 /// Structure to hold subscription information
 struct Subscription {
@@ -73,7 +74,7 @@ impl Subscription {
         };
 
         if should_process {
-            (self.callback)(payload.to_string())?;
+            (self.callback)(payload.to_string()).await?;
         }
         Ok(())
     }
@@ -112,7 +113,10 @@ impl MqttClientManager {
         &self,
         topic: String,
         filter: Option<Box<dyn MessageFilter>>,
-        callback: impl Fn(String) -> Result<()> + Send + Sync + 'static,
+        callback: impl Fn(String) -> Pin<Box<dyn Future<Output = Result<()>> + Send>>
+            + Send
+            + Sync
+            + 'static,
     ) -> Result<()> {
         let mut subs = self.subscriptions.lock().await;
 
