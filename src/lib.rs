@@ -42,6 +42,9 @@ pub mod models;
 /// MQTT client implementation
 pub mod mqtt_client;
 
+/// InfluxDB client implementation
+pub mod influxdb;
+
 #[cfg(test)]
 mod tests {
     use super::*;

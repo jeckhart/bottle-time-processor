@@ -34,6 +34,22 @@ pub struct Options {
     /// MQTT topic to subscribe for events
     #[arg(long, env = "MQTT_TOPIC", default_value = "username/feeds/topic1")]
     pub topic: String,
+
+    /// InfluxDB URL
+    #[arg(long, env = "INFLUXDB_URL", default_value = "http://localhost:8086")]
+    pub influxdb_url: String,
+
+    /// InfluxDB token
+    #[arg(long, env = "INFLUXDB_TOKEN")]
+    pub influxdb_token: String,
+
+    /// InfluxDB organization
+    #[arg(long, env = "INFLUXDB_ORG")]
+    pub influxdb_org: String,
+
+    /// InfluxDB bucket
+    #[arg(long, env = "INFLUXDB_BUCKET")]
+    pub influxdb_bucket: String,
 }
 
 pub fn parse() -> Options {
