@@ -82,7 +82,8 @@ allow = [
     "BSD-2-Clause",
     "BSD-3-Clause",
     "ISC",
-    "Zlib"
+    "Zlib",
+    "Unicode-3.0"
 ]
 # List of explicitly disallowed licenses
 # See https://spdx.org/licenses/ for list of possible licenses
@@ -116,7 +117,6 @@ exceptions = [
     # use data from the unicode tables to generate the tables which are
     # included in the application. We do not distribute those data files so
     # this is not a problem for us. See https://github.com/dtolnay/unicode-ident/pull/9/files
-    { allow = ["Unicode-3.0"], name = "unicode-ident", version = "*"},
     { allow = ["OpenSSL"], name = "ring", version = "*" },
     { allow = ["MPL-2.0"], name = "webpki-roots", version = "*"},
 ]

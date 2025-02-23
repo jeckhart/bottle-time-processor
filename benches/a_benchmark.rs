@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 
 pub fn add_benchmark(c: &mut Criterion) {
     let mut rvg = bottle_time_processor::test_utils::Rvg::deterministic();
