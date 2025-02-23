@@ -114,9 +114,9 @@ impl MqttClientManager {
         topic: String,
         filter: Option<Box<dyn MessageFilter>>,
         callback: impl Fn(String) -> Pin<Box<dyn Future<Output = Result<()>> + Send>>
-            + Send
-            + Sync
-            + 'static,
+        + Send
+        + Sync
+        + 'static,
     ) -> Result<()> {
         let mut subs = self.subscriptions.lock().await;
 
