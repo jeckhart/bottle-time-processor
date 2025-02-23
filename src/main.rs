@@ -5,11 +5,8 @@ use std::time::Duration;
 use tokio_graceful_shutdown::{SubsystemBuilder, Toplevel};
 
 mod command_line;
-mod error;
-mod influxdb;
-mod models;
+
 mod mqtt;
-mod mqtt_client;
 
 /// Main entry point.
 #[tokio::main]
