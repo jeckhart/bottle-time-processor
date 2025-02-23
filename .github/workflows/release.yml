@@ -129,10 +129,9 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
-          override: true
-          profile: minimal
+          toolchain: 'stable'
 
       - name: Verify Publishing of crate
         uses: katyo/publish-crates@v2
