@@ -30,6 +30,11 @@ name = "a_benchmark"
 harness = false
 required-features = ["test_utils"]
 
+[features]
+default = []
+systemd = ["dep:systemd"]
+test_utils = ["dep:proptest"]
+
 [dependencies]
 anyhow = "1.0"
 proptest = { version = "1.6", optional = true }
@@ -62,13 +67,12 @@ influxdb2-derive = "0.1"
 
 futures = "0.3"
 
+# systemd used to implement a systemd based watchdog timer
+systemd = { version = "0.10", default-features = false, features = [], optional = true }
+
 [dev-dependencies]
 criterion = "0.5"
 proptest = "1.1"
-
-[features]
-default = []
-test_utils = ["proptest"]
 
 [metadata.docs.rs]
 all-features = true

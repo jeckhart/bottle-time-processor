@@ -19,6 +19,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: ⚙️ Install libsystemd-dev
+        run: |
+          sudo apt-get update -qqy
+          sudo apt-get -y install libsystemd-dev
+          pkg-config --libs --cflags libsystemd
+
       - name: Install Rust Toolchain
         uses: dtolnay/rust-toolchain@master
         with:

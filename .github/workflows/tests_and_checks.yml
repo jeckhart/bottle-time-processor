@@ -26,6 +26,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: ⚙️ Install libsystemd-dev
+        run: |
+          sudo apt-get update -qqy
+          sudo apt-get -y install libsystemd-dev
+          pkg-config --libs --cflags libsystemd
+
       # Smarter caching action, speeds up build times compared to regular cache:
       # https://github.com/Swatinem/rust-cache
       - name: Cache Project
@@ -85,10 +91,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Environment Packages
+      - name: ⚙️ Install Environment Packages jq and libsystemd-dev
         run: |
           sudo apt-get update -qqy
-          sudo apt-get install jq
+          sudo apt-get install -y jq libsystemd-dev
+          pkg-config --libs --cflags libsystemd
 
       - name: Cache Project
         uses: Swatinem/rust-cache@v2
@@ -97,6 +104,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust-toolchain }}
+          components: cargo, rustc, rust-std
 
       - name: Run Tests
         run: cargo test --all-features
