@@ -331,6 +331,13 @@ BDEPEND=""
 QA_FLAGS_IGNORED="usr/bin/${PN}"
 
 ##
+src_configure() {
+    local myfeatures=(
+        $(usev systemd)
+    )
+    cargo_src_configure "${myfeatures[@]}"
+}
+
 # Install the built binary and systemd unit file.
 src_install() {
   cargo_src_install
