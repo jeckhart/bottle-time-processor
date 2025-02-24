@@ -30,7 +30,7 @@
         pkgs = import nixpkgs {inherit system overlays;};
 
         rust-toolchain = (pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml).override {
-          extensions = ["cargo" "clippy" "rustfmt" "rust-src" "rust-std"];
+          extensions = ["cargo" "clippy" "rustfmt" "rust-src" "rust-std" "llvm-tools-preview"];
         };
 
         nightly-rustfmt = pkgs.rust-bin.nightly.latest.rustfmt;
@@ -45,6 +45,7 @@
           cargo-auditable
           cargo-deny
           cargo-expand
+          cargo-llvm-cov
           cargo-nextest
           cargo-outdated
           cargo-spellcheck

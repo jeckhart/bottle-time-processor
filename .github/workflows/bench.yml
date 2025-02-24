@@ -24,6 +24,12 @@ jobs:
         with:
           toolchain: 'stable'
 
+      - name: ⚙️ Install libsystemd-dev
+        run: |
+          sudo apt-get update -qqy
+          sudo apt-get -y install libsystemd-dev
+          pkg-config --libs --cflags libsystemd
+
       - name: Cache Project
         uses: Swatinem/rust-cache@v2
 

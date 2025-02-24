@@ -1,11 +1,16 @@
+use crate::watchdog::Signal;
 use bottle_time_processor::{
     error::ResultExt, influxdb::InfluxDBWriter, models::KasaPowerMessage,
     mqtt_client::MqttClientManager,
 };
 use rumqttc::MqttOptions;
 use std::time::Duration;
+use tokio::sync::mpsc::Sender;
 
-pub async fn setup_mqtt(opts: &crate::command_line::Options) -> miette::Result<MqttClientManager> {
+pub async fn setup_mqtt(
+    opts: &crate::command_line::Options,
+    reset_tx: Option<Sender<Signal>>,
+) -> miette::Result<MqttClientManager> {
     let mut mqttoptions = MqttOptions::new("bottle_time_processor", opts.broker.clone(), opts.port);
     mqttoptions.set_keep_alive(Duration::from_secs(5));
     mqttoptions.set_credentials(opts.username.clone(), opts.password.clone());
@@ -22,6 +27,7 @@ pub async fn setup_mqtt(opts: &crate::command_line::Options) -> miette::Result<M
     mqtt_client_manager
         .subscribe(opts.topic.clone(), None, move |message| {
             let influxdb = influxdb.clone();
+            let reset_tx_clone = reset_tx.clone();
             Box::pin(async move {
                 let power_message: KasaPowerMessage =
                     serde_json::from_str(message.as_str()).with_serde_json_context()?;
@@ -33,6 +39,12 @@ pub async fn setup_mqtt(opts: &crate::command_line::Options) -> miette::Result<M
                         .await
                         .expect("Failed to write power reading to InfluxDB");
                 }
+                tracing::info!("Resetting watchdog timer");
+                let _x = match reset_tx_clone {
+                    Some(tx) => tx.send(Signal::Reset).await,
+                    None => Ok(()),
+                };
+
                 Ok(())
             })
         })
