@@ -100,11 +100,30 @@ jobs:
       - name: Cache Project
         uses: Swatinem/rust-cache@v2
 
+      - name: Test Cargo
+        run: |
+          which cargo
+          cargo --version
+
+      - name: Install Stable Rust Toolchain (see if this helps with the version conflicts with nightly?)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: cargo, rustc, rust-std
+
       - name: Install Rust Toolchain
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust-toolchain }}
           components: cargo, rustc, rust-std
 
+      - name: Test Cargo
+        run: |
+          which cargo
+          cargo --version
+
       - name: Run Tests
-        run: cargo test --all-features
+        run: |
+          which cargo
+          cargo --version
+          cargo test --all-features
