@@ -15,6 +15,12 @@ pub trait ResultExt<T> {
 
     /// Wraps an error with a serde_json context
     fn with_serde_json_context(self) -> Result<T>;
+
+    /// Wraps an error with a systemd context
+    fn with_systemd_context(self) -> Result<T>;
+
+    /// Wraps an error with a parse context
+    fn with_parse_context(self, orig: String) -> Result<T>;
 }
 
 impl<T, E: std::error::Error + Send + Sync + 'static> ResultExt<T> for std::result::Result<T, E> {
@@ -30,5 +36,13 @@ impl<T, E: std::error::Error + Send + Sync + 'static> ResultExt<T> for std::resu
 
     fn with_serde_json_context(self) -> Result<T> {
         self.map_err(|e| Report::from_err(e).wrap_err("Serde JSON error"))
+    }
+
+    fn with_systemd_context(self) -> Result<T> {
+        self.map_err(|e| Report::from_err(e).wrap_err("Systemd error"))
+    }
+
+    fn with_parse_context(self, orig: String) -> Result<T> {
+        self.map_err(|e| Report::from_err(e).wrap_err(format!("Failed parsing value: {}", orig)))
     }
 }
