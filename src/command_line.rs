@@ -50,6 +50,15 @@ pub struct Options {
     /// InfluxDB bucket
     #[arg(long, env = "INFLUXDB_BUCKET")]
     pub influxdb_bucket: String,
+
+    /// Enabled a watchdog timer to restart the application if it stops receiving events
+    #[cfg(feature = "systemd")]
+    #[arg(long, env = "WATCHDOG_TIMER", default_value = "systemd")]
+    pub watchdog_time: String,
+
+    #[cfg(not(feature = "systemd"))]
+    #[arg(long, env = "WATCHDOG_TIMER", default_value = "900")]
+    pub watchdog_time: String,
 }
 
 pub fn parse() -> Options {

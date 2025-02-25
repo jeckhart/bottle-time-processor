@@ -9,7 +9,7 @@
 {%- endblock -%}
 
 {% block variables -%}
-USE="systemd"
+IUSE="systemd"
 DEPEND=""
 RDEPEND="
   acct-group/bottle-time-processor
@@ -26,6 +26,15 @@ QA_FLAGS_IGNORED="usr/bin/${PN}"
 {%- endblock -%}
 
 {% block phases -%}
+#
+# Configure the package.
+src_configure() {
+    local myfeatures=(
+        $(usev systemd)
+    )
+    cargo_src_configure
+}
+
 #
 # Install the built binary and systemd unit file.
 src_install() {

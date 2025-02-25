@@ -19,35 +19,54 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: ⚙️ Install libsystemd-dev
+        run: |
+          sudo apt-get update -qqy
+          sudo apt-get -y install libsystemd-dev
+          pkg-config --libs --cflags libsystemd
+
+      - name: Install Stable Cargo Toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          components: cargo
+          toolchain: 'stable'
+
       - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@master
         with:
           components: rustc, rust-std, cargo, llvm-tools, llvm-tools-preview
+          toolchain: 'nightly'
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Cache Project
         uses: Swatinem/rust-cache@v2
 
       - run: mkdir -p ./target/debug/coverage
 
-      - name: Generate Code coverage
-        env:
-          CARGO_INCREMENTAL: '0'
-          LLVM_PROFILE_FILE: "target/debug/coverage/bottle-time-processor-%p-%m.profraw"
-          RUSTFLAGS: '-Cinstrument-coverage -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off'
-          RUSTDOCFLAGS: '-Cinstrument-coverage -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off'
-        run: cargo test --all-features
+#      - name: Generate Code coverage
+#        env:
+#          CARGO_INCREMENTAL: '0'
+#          LLVM_PROFILE_FILE: "target/debug/coverage/bottle-time-processor-%p-%m.profraw"
+#          RUSTFLAGS: '-Cinstrument-coverage -Ccodegen-units=1 -Cllvm-args=--inline-threshold=0 -Clink-dead-code -Coverflow-checks=off'
+#          RUSTDOCFLAGS: '-Cinstrument-coverage -Ccodegen-units=1 -Cllvm-args=--inline-threshold=0 -Clink-dead-code -Coverflow-checks=off'
+#        run: cargo test --all-features
+
+      - name: Generate code coverage
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
 
       - name: Install grcov
         run: "curl -L https://github.com/mozilla/grcov/releases/download/v0.8.12/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf -"
 
-      - run: zip ./target/debug/coverage/files.zip ./target/debug/deps/bottle-time-processor-*.gcda ./target/debug/deps/bottle-time-processor-*.gcno
-      - run: grcov ./target/debug/coverage/files.zip -s . --service-name "Continuous Integration" --commit-sha ${GITHUB_SHA} -t lcov --branch --ignore-not-existing --ignore "../*" --ignore "/*" --ignore "*/test_helper.rs" -o ./target/debug/coverage/
-
-      - run: zip ./target/debug/coverage/files.zip ./target/debug/coverage/bottle-time-processor-*.profraw
-      - run: grcov ./target/debug/coverage/files.zip -s . --binary-path ./target/debug/ --service-name "Continuous Integration" --commit-sha ${GITHUB_SHA} -t lcov --branch --ignore-not-existing --ignore "../*" --ignore "/*" --ignore "*/test_helper.rs" -o ./target/debug/coverage/
-
-      - name: Run grcov
-        run: "./grcov . --llvm --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore '/*' -o lcov.info"
+#      - run: zip ./target/debug/coverage/files.zip ./target/debug/deps/bottle-time-processor-*.gcda ./target/debug/deps/bottle-time-processor-*.gcno
+#      - run: grcov ./target/debug/coverage/files.zip -s . --service-name "Continuous Integration" --commit-sha ${GITHUB_SHA} -t lcov --branch --ignore-not-existing --ignore "../*" --ignore "/*" --ignore "*/test_helper.rs" -o ./target/debug/coverage/
+#
+#      - run: zip ./target/debug/coverage/files.zip ./target/debug/coverage/bottle-time-processor-*.profraw
+#      - run: grcov ./target/debug/coverage/files.zip -s . --binary-path ./target/debug/ --service-name "Continuous Integration" --commit-sha ${GITHUB_SHA} -t lcov --branch --ignore-not-existing --ignore "../*" --ignore "/*" --ignore "*/test_helper.rs" -o ./target/debug/coverage/
+#
+#      - name: Run grcov
+#        run: "./grcov . --llvm --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore '/*' -o lcov.info"
 
       - name: Install covfix
         uses: actions-rs/install@v0.1

@@ -8,8 +8,11 @@ Type=simple
 # Adjust the path to the binary as needed.
 ExecStart=/usr/bin/bottle-time-processor
 
+# Enable a watchdog to monitor the service.
+WatchdogSec=900
+
 # Restart the service automatically on failure.
-Restart=on-failure
+Restart=always
 RestartSec=5
 
 [Install]

@@ -3,11 +3,15 @@ name: 🛡 Audit-Check
 on:
   schedule:
     - cron: '0 0 * * *'
+  push:
+      paths:
+        - '**/Cargo.toml'
+        - '**/Cargo.lock'
+
 
 jobs:
   security-audit:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
