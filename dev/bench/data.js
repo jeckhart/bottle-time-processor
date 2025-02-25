@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740462855864,
+  "lastUpdate": 1740465718123,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -83,6 +83,36 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/jeckhart/bottle-time-processor/commit/e2b464c58f02d359cd364c43efface9a17f91445"
         },
         "date": 1740462855558,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "add",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "distinct": true,
+          "id": "85ac67edfe3804aa89151f12fce726b335e19421",
+          "message": "chore: fix ebuild file to include systemd eclass inherit",
+          "timestamp": "2025-02-25T01:40:56-05:00",
+          "tree_id": "ec75ebfe15e0f154483131ba60ed605ae97df2d6",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/85ac67edfe3804aa89151f12fce726b335e19421"
+        },
+        "date": 1740465717706,
         "tool": "cargo",
         "benches": [
           {
