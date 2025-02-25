@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740449618839,
+  "lastUpdate": 1740459862426,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -23,6 +23,36 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/jeckhart/bottle-time-processor/commit/6ce4315f64297bd887f588032a49ab227f0a1370"
         },
         "date": 1740449618394,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "add",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "5ace567a45768e7197d76e9f85f9fdca4d46108a",
+          "message": "Merge pull request #28 from jeckhart/release-please--branches--main--components--bottle-time-processor\n\nchore(main): release 0.1.2",
+          "timestamp": "2025-02-25T00:02:11-05:00",
+          "tree_id": "c9911d80ea8116c467c6bbf277aa94f078afac34",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/5ace567a45768e7197d76e9f85f9fdca4d46108a"
+        },
+        "date": 1740459862162,
         "tool": "cargo",
         "benches": [
           {
