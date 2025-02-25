@@ -1,6 +1,6 @@
 [package]
 name = "bottle-time-processor"
-version = "0.1.1"
+version = "0.1.2"
 description = "Processor to read events from mqtt and identify a bottle-time event from them"
 keywords = []
 categories = []
@@ -69,6 +69,8 @@ futures = "0.3"
 
 # systemd used to implement a systemd based watchdog timer
 systemd = { version = "0.10", default-features = false, features = [], optional = true }
+
+openssl = { version = "0.10", features = ["vendored"] }
 
 [dev-dependencies]
 criterion = "0.5"
