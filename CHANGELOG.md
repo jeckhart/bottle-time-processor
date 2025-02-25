@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.2](https://github.com/jeckhart/bottle-time-processor/compare/v0.1.1...v0.1.2) (2025-02-25)
+
+
+### Features
+
+* **systemd:** Build with systemd on gentoo if the systemd use flag is enabled ([f987617](https://github.com/jeckhart/bottle-time-processor/commit/f9876171e77e1a931d75d3021fab37f047c80e38))
+* **watchdog:** Add a watchdog timer to restart the service it it fails to receive an mqtt message in a certain amount of time ([64adc8f](https://github.com/jeckhart/bottle-time-processor/commit/64adc8ffb49d431f146cb2acbb35b64cf8f0bd96))
+
 ## [0.1.1](https://github.com/jeckhart/bottle-time-processor/compare/v0.1.0...v0.1.1) (2025-02-24)
 
 
