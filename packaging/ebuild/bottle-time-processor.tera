@@ -1,8 +1,13 @@
 {%- extends "base.tera" -%}
 
+{%- block inherit -%}
+  cargo systemd
+{%- endblock -%}
+
 {%- block src_uri -%}{% raw -%}"
   https://github.com/jeckhart/${PN}/archive/refs/tags/v${PV}.tar.gz -> ${P}.tar.gz
-  $(cargo_crate_uris ${CRATES})"{%- endraw %}{%- endblock %}
+  $(cargo_crate_uris ${CRATES})"{%- endraw %}
+{%- endblock %}
 
 {%- block homepage -%}
   https://github.com/jeckhart/${PN}
