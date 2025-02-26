@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740465718123,
+  "lastUpdate": 1740580070465,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -113,6 +113,36 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/jeckhart/bottle-time-processor/commit/85ac67edfe3804aa89151f12fce726b335e19421"
         },
         "date": 1740465717706,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "add",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "distinct": true,
+          "id": "6545505d2d10df828306ef382d76241a3c9b69c2",
+          "message": "test: add some tests for the watchdog functionality",
+          "timestamp": "2025-02-26T09:26:51-05:00",
+          "tree_id": "d691790791e1ab0a26f2a27dda0100df174a77d2",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/6545505d2d10df828306ef382d76241a3c9b69c2"
+        },
+        "date": 1740580070142,
         "tool": "cargo",
         "benches": [
           {
