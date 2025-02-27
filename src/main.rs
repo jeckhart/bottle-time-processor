@@ -18,13 +18,13 @@ mod watchdog;
 
 pub async fn watchdog_task(
     subsys: SubsystemHandle,
-    mut watchdog_expired_rx: Option<Receiver<Expired>>,
+    watchdog_expired_rx: Option<&mut Receiver<Expired>>,
 ) -> miette::Result<(), Error> {
     let duration = Duration::from_millis(20);
 
     let sleep = tokio::time::sleep(duration);
     let expired: Pin<Box<dyn futures::Future<Output = Result<Expired, RecvError>> + Send>> =
-        match watchdog_expired_rx.as_mut() {
+        match watchdog_expired_rx {
             Some(rx) => Box::pin(rx),
             None => Box::pin(pending::<Result<Expired, RecvError>>()),
         };
@@ -35,12 +35,21 @@ pub async fn watchdog_task(
     tracing::info!("watchdog_task started.");
     loop {
         tokio::select! {
-            _ = &mut expired => {
-                tracing::error!("Watchdog expired!");
+            msg = &mut expired => {
+                match msg {
+                    Ok(_result) => {
+                        tracing::error!("Watchdog expired!");
+                    },
+                    Err(e) => {
+                        tracing::error!("Watchdog expired with error: {:?}", e);
+                    },
+                }
 
                 // If we're not using systemd, then we need to request a shutdown
                 #[cfg(not(feature = "systemd"))]
                 subsys.request_shutdown();
+
+                break;
             },
             _ = subsys.on_shutdown_requested() => {
                 tracing::error!("Shutdown requested!");
@@ -78,7 +87,7 @@ async fn main() -> miette::Result<()> {
         ));
         s.start(SubsystemBuilder::new(
             "watchdog_task",
-            |subsys| async move { watchdog_task(subsys, Some(expire_rx)).await },
+            |subsys| async move { watchdog_task(subsys, Some(expire_rx).as_mut()).await },
         ));
         s.start(SubsystemBuilder::new("mqtt", |_subsys| async move {
             mqtt::setup_mqtt(&opts, Some(reset_tx)).await.map(|_| ())
