@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/jeckhart/bottle-time-processor/compare/v0.1.3...v0.1.4) (2025-03-01)
+
+
+### Bug Fixes
+
+* stop running watchdog once it expires, even on systemd ([2524548](https://github.com/jeckhart/bottle-time-processor/commit/25245484a42b369b62faf7b68f4a99df46b70bd5))
+
 ## [0.1.3](https://github.com/jeckhart/bottle-time-processor/compare/v0.1.2...v0.1.3) (2025-02-25)
 
 
