@@ -46,3 +46,66 @@ impl<T, E: std::error::Error + Send + Sync + 'static> ResultExt<T> for std::resu
         self.map_err(|e| Report::from_err(e).wrap_err(format!("Failed parsing value: {}", orig)))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_with_mqtt_context() {
+        let err = std::io::Error::new(std::io::ErrorKind::Other, "MQTT error");
+        let result: Result<()> = Err(err).with_mqtt_context();
+        assert!(result.is_err());
+
+        let report = result.unwrap_err();
+        assert!(report.to_string().contains("MQTT error"));
+    }
+
+    #[test]
+    fn test_with_subscription_context() {
+        let err = std::io::Error::new(std::io::ErrorKind::Other, "Subscription error");
+        let result: Result<()> = Err(err).with_subscription_context("test_sub");
+        assert!(result.is_err());
+
+        let report = result.unwrap_err();
+        assert!(
+            report
+                .to_string()
+                .contains("Error subscribing to topic: test_sub")
+        );
+    }
+
+    #[test]
+    fn test_with_serde_json_context() {
+        let err = std::io::Error::new(std::io::ErrorKind::Other, "JSON error");
+        let result: Result<()> = Err(err).with_serde_json_context();
+        assert!(result.is_err());
+
+        let report = result.unwrap_err();
+        assert!(report.to_string().contains("Serde JSON error"));
+    }
+
+    #[test]
+    fn test_with_systemd_context() {
+        let err = std::io::Error::new(std::io::ErrorKind::Other, "Systemd error");
+        let result: Result<()> = Err(err).with_systemd_context();
+        assert!(result.is_err());
+
+        let report = result.unwrap_err();
+        assert!(report.to_string().contains("Systemd error"));
+    }
+
+    #[test]
+    fn test_with_parse_context() {
+        let err = std::io::Error::new(std::io::ErrorKind::Other, "Parse error");
+        let result: Result<()> = Err(err).with_parse_context("orig_value".to_string());
+        assert!(result.is_err());
+
+        let report = result.unwrap_err();
+        assert!(
+            report
+                .to_string()
+                .contains("Failed parsing value: orig_value")
+        );
+    }
+}

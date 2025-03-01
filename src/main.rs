@@ -69,7 +69,7 @@ pub async fn watchdog_task(
 #[tokio::main]
 async fn main() -> miette::Result<()> {
     // Query command line options and initialize logging
-    let opts = command_line::parse();
+    let opts = command_line::parse::<Vec<String>>(None);
 
     // Setup the watchdog timer
     let watchdog: Pin<Box<Watchdog>> = Box::pin(watchdog::setup_watchdog(&opts).await?);
