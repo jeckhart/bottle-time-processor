@@ -78,9 +78,10 @@ jobs:
         run: rust-covfix lcov.info -o lcov.info --verbose
 
       - name: Upload to codecov.io
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         continue-on-error: true
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          slug: jeckhart/bottle-time-processor
           fail_ci_if_error: false
           files: lcov.info
