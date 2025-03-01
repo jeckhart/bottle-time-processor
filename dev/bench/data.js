@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740622614033,
+  "lastUpdate": 1740797069992,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -233,6 +233,36 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/jeckhart/bottle-time-processor/commit/7b8fd764150e0c6a69503156286f31f18ead412c"
         },
         "date": 1740622613208,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "add",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b667aa5e8bd9bc72eb698dc286af2cb50e905744",
+          "message": "Merge pull request #31 from jeckhart/test/add-tests-to-watchdog\n\nfix: stop running watchdog once it expires, even on systemd",
+          "timestamp": "2025-02-28T21:43:47-05:00",
+          "tree_id": "6140f74e31f3b96678e74b103256479216984899",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/b667aa5e8bd9bc72eb698dc286af2cb50e905744"
+        },
+        "date": 1740797069719,
         "tool": "cargo",
         "benches": [
           {
