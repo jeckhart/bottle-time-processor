@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740798345472,
+  "lastUpdate": 1740859409141,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -293,6 +293,36 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/jeckhart/bottle-time-processor/commit/252d85376afd101b8606f0e150ba222c282ec0c4"
         },
         "date": 1740798344623,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "add",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "distinct": true,
+          "id": "26437c913acbba068d2e404a0fd850810f0c3cc6",
+          "message": "chore(deps): bump codecov/codecov-action from 3 to 5\n\n        Bumps [codecov/codecov-action](https://github.com/codecov/codecov-action) from 3 to 4.\n        - [Release notes](https://github.com/codecov/codecov-action/releases)\n        - [Changelog](https://github.com/codecov/codecov-action/blob/master/CHANGELOG.md)\n        - [Commits](https://github.com/codecov/codecov-action/compare/v3.0.0...v5.4.0)\n\n        ---\n        updated-dependencies:\n        - dependency-name: codecov/codecov-action\n          dependency-type: direct:production\n          update-type: version-update:semver-major\n        ...",
+          "timestamp": "2025-03-01T14:59:29-05:00",
+          "tree_id": "29ed9e574c75d772cb06f677f919c9b4e450c233",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/26437c913acbba068d2e404a0fd850810f0c3cc6"
+        },
+        "date": 1740859408558,
         "tool": "cargo",
         "benches": [
           {
