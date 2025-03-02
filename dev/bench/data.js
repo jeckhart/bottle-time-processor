@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740859409141,
+  "lastUpdate": 1740890052829,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -323,6 +323,36 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/jeckhart/bottle-time-processor/commit/26437c913acbba068d2e404a0fd850810f0c3cc6"
         },
         "date": 1740859408558,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "add",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "38875ad9f54ff258e3f6d85a28649b0b695e6c5d",
+          "message": "Merge pull request #33 from jeckhart/je-expand-test-coverage\n\nExpand test coverage",
+          "timestamp": "2025-03-01T23:33:30-05:00",
+          "tree_id": "21f20c16440fd184e8b1b3c3eb14a957521be2ca",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/38875ad9f54ff258e3f6d85a28649b0b695e6c5d"
+        },
+        "date": 1740890052474,
         "tool": "cargo",
         "benches": [
           {
