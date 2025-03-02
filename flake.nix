@@ -45,7 +45,6 @@
           cargo-auditable
           cargo-deny
           cargo-expand
-          cargo-llvm-cov
           cargo-nextest
           cargo-outdated
           cargo-spellcheck

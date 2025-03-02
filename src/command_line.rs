@@ -61,8 +61,21 @@ pub struct Options {
     pub watchdog_time: String,
 }
 
-pub fn parse() -> Options {
-    let opts = Options::parse();
+pub fn parse<I>(args: Option<I>) -> Options
+where
+    I: IntoIterator,
+    I::Item: Into<String>,
+{
+    let args: Vec<String> = args.map_or_else(
+        || {
+            std::env::args_os()
+                .map(|x| x.into_string().unwrap())
+                .collect()
+        },
+        |x| x.into_iter().map(|x| x.into()).collect(),
+    );
+
+    let opts = Options::try_parse_from(args).unwrap();
 
     let debug_level = match opts.verbose {
         0 => tracing::Level::INFO,
@@ -72,4 +85,66 @@ pub fn parse() -> Options {
     tracing_subscriber::fmt().with_max_level(debug_level).init();
 
     opts
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[ignore] // Ignoring this test because it will fail if any of the environment variables are set
+    fn test_defaults() {
+        let opts = Options::try_parse_from(
+            vec![
+                "bottle-time-processor",
+                "--influxdb-token",
+                "token",
+                "--influxdb-org",
+                "org",
+                "--influxdb-bucket",
+                "bucket",
+            ]
+            .iter(),
+        )
+        .unwrap();
+        assert_eq!(opts.broker, "localhost");
+        assert_eq!(opts.port, 1883);
+        assert_eq!(opts.username, "username");
+        assert_eq!(opts.password, "password");
+        assert_eq!(opts.topic, "username/feeds/topic1");
+        assert_eq!(opts.influxdb_url, "http://localhost:8086");
+    }
+
+    #[test]
+    fn test_parse_verbose() {
+        let opts = Options::parse_from(&[
+            "test",
+            "-vv",
+            "--influxdb-token",
+            "token",
+            "--influxdb-org",
+            "org",
+            "--influxdb-bucket",
+            "bucket",
+        ]);
+        assert_eq!(opts.verbose, 2);
+    }
+
+    #[test]
+    fn test_parse() {
+        let args = vec![
+            "bottle-time-processor",
+            "--influxdb-token",
+            "token",
+            "--influxdb-org",
+            "org",
+            "--influxdb-bucket",
+            "bucket",
+        ];
+        let opts = parse(Some(args.iter().map(|x| x.to_string())));
+
+        assert_eq!(opts.influxdb_token, "token");
+        assert_eq!(opts.influxdb_org, "org");
+        assert_eq!(opts.influxdb_bucket, "bucket");
+    }
 }

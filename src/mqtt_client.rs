@@ -265,4 +265,82 @@ mod tests {
         let result = MqttClientManager::regex_filter("[invalid");
         assert!(result.is_err());
     }
+
+    #[test]
+    fn test_function_filter_format() {
+        let func = MqttClientManager::function_filter(|msg| msg.contains("test"));
+        assert_eq!(format!("{:?}", func), "FunctionFilter(\"<function>\")");
+    }
+
+    #[tokio::test]
+    async fn test_handle_message() {
+        let manager = MqttClientManager {
+            client: AsyncClient::new(MqttOptions::new("test", "localhost", 1883), 10).0,
+            subscriptions: Arc::new(Mutex::new(HashMap::new())),
+        };
+
+        let topic = "test".to_string();
+        let payload = "test message".to_string();
+
+        let filter = ContainsFilter("test".to_string());
+
+        let callback: MessageCallback = Box::new(|msg: String| {
+            Box::pin({
+                async move {
+                    assert_eq!(msg, "test message");
+                    Ok(())
+                }
+            })
+        });
+
+        let subscription = Subscription {
+            filter: Some(Box::new(filter)),
+            callback: Box::new(callback),
+        };
+
+        {
+            let mut subs = manager.subscriptions.lock().await;
+            subs.insert(topic.clone(), vec![subscription]);
+        }
+        manager.handle_message(&topic, &payload).await.unwrap();
+    }
+
+    #[test]
+    fn test_format_for_subscription() {
+        let filter = ContainsFilter("test".to_string());
+        let callback: MessageCallback = Box::new(|msg: String| {
+            Box::pin({
+                async move {
+                    assert_eq!(msg, "test message");
+                    Ok(())
+                }
+            })
+        });
+
+        let subscription = Subscription {
+            filter: Some(Box::new(filter)),
+            callback: Box::new(callback),
+        };
+
+        assert_eq!(
+            format!("{:?}", subscription),
+            "Subscription { filter: Some(ContainsFilter(\"test\")), callback: \"<function>\" }"
+        );
+    }
+
+    #[test]
+    fn test_format_for_mqtt_manager() {
+        let manager = MqttClientManager {
+            client: AsyncClient::new(MqttOptions::new("test", "localhost", 1883), 10).0,
+            subscriptions: Arc::new(Mutex::new(HashMap::new())),
+        };
+
+        assert_eq!(
+            format!("{:?}", manager),
+            format!(
+                "MqttClientManager {{ client: {:?}, subscriptions: Mutex {{ data: {{}} }} }}",
+                AsyncClient::new(MqttOptions::new("test", "localhost", 1883), 10).0
+            )
+        )
+    }
 }
