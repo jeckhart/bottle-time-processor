@@ -88,7 +88,50 @@ async fn process_message(
 mod tests {
     use super::*;
     use crate::command_line::Options;
+    use async_trait::async_trait;
+    use bottle_time_processor::influxdb::InfluxDbClient;
     use clap::Parser;
+    use influxdb2::models::{DataPoint, WriteDataPoint};
+    use std::{
+        fmt::{Display, Formatter},
+        sync::Arc,
+    };
+    use tokio::sync::Mutex;
+
+    //==========================================================================
+    // Fake InfluxDB Client for Testing
+    //==========================================================================
+    struct FakeInfluxDbClient {
+        pub data_points_written: Mutex<Vec<DataPoint>>,
+    }
+
+    impl FakeInfluxDbClient {
+        pub fn new() -> Self {
+            Self {
+                data_points_written: Mutex::new(Vec::new()),
+            }
+        }
+    }
+
+    impl Display for FakeInfluxDbClient {
+        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            write!(f, "client: Fake")
+        }
+    }
+
+    #[async_trait]
+    impl InfluxDbClient for FakeInfluxDbClient {
+        async fn write_data_point(
+            &self,
+            _bucket: &str,
+            point: DataPoint,
+        ) -> Result<(), miette::Error> {
+            let mut data_points = self.data_points_written.lock().await;
+            data_points.push(point);
+            // For testing, simply simulate a successful write.
+            Ok(())
+        }
+    }
 
     fn get_default_opts() -> Options {
         Options::try_parse_from(
@@ -133,6 +176,34 @@ mod tests {
         assert_eq!(
             writer.to_string(),
             "InfluxDBWriter { client: { url: \"http://localhost:8086/\", org: \"org\", }, bucket: \"bucket\" }"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_process_message() {
+        let fake_client = Arc::new(FakeInfluxDbClient::new());
+        // Mock setup
+        let mock_writer =
+            InfluxDBWriter::with_client(fake_client.clone(), "test_bucket".to_string());
+
+        // Sample power readings
+        let message = r#"{"alias":"dev01","deviceId":"1234","power_total":7,"voltages_mv":[119355,119355,119276,119276,119171,119171,119171],"currents_ma":[23,23,23,23,23,23,22],"powers_mw":[754,757,757,739,739,770,770],"timestamps":[1740947155686,1740947158755,1740947161665,1740947164698,1740947167764,1740947170665,1740947172914],"num_readings":7}"#;
+
+        let result = process_message(message, &mock_writer, None).await;
+
+        assert!(result.is_ok());
+
+        assert_eq!(fake_client.data_points_written.lock().await.len(), 7);
+
+        // Check the first data point
+        let dp1 = &fake_client.data_points_written.lock().await[0];
+        let mut v = Vec::new();
+        dp1.write_data_point_to(&mut v).unwrap();
+        let s = String::from_utf8(v).unwrap();
+
+        assert_eq!(
+            s,
+            "power_reading,device_id=1234,device_name=dev01 current_ma=23,power_mw=754,voltage_mv=119355 1740947155686000000\n"
         );
     }
 }
