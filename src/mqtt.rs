@@ -1,7 +1,7 @@
-use crate::watchdog::Signal;
 use bottle_time_processor::{
-    error::ResultExt, influxdb::InfluxDBWriter, models::KasaPowerMessage,
-    mqtt_client::MqttClientManager,
+    influxdb::InfluxDBWriter,
+    mqtt_client::{MqttClientManager, process_message},
+    watchdog::Signal,
 };
 use rumqttc::MqttOptions;
 use std::time::Duration;
@@ -56,32 +56,6 @@ async fn subscribe_to_topic(
             )
         })
         .await
-}
-
-async fn process_message(
-    message: &str,
-    influxdb: &InfluxDBWriter,
-    reset_tx: Option<Sender<Signal>>,
-) -> miette::Result<()> {
-    let power_message: KasaPowerMessage =
-        serde_json::from_str(message).with_serde_json_context()?;
-    let readings = power_message.into_readings();
-
-    for reading in readings {
-        tracing::debug!("Writing reading to InfluxDB: {:?}", reading);
-        influxdb
-            .write_power_reading(&reading)
-            .await
-            .expect("Failed to write power reading to InfluxDB");
-    }
-
-    tracing::info!("Resetting watchdog timer");
-
-    if let Some(tx) = reset_tx {
-        tx.send(Signal::Reset).await.ok();
-    }
-
-    Ok(())
 }
 
 #[cfg(test)]

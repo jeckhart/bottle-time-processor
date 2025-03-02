@@ -12,7 +12,6 @@ use tokio::sync::{
 use tokio_graceful_shutdown::{SubsystemBuilder, SubsystemHandle, Toplevel};
 
 mod command_line;
-
 mod mqtt;
 mod watchdog;
 
