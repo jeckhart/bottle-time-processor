@@ -1,18 +1,9 @@
-use bottle_time_processor::error::ResultExt;
+use bottle_time_processor::{error::ResultExt, watchdog::Signal};
 use std::time::Duration;
 use tokio::{
     sync::{mpsc, oneshot},
     time::{Instant, sleep},
 };
-
-/// Signal for interacting with the watchdog.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
-#[allow(dead_code)]
-pub enum Signal {
-    #[default]
-    Reset,
-    Stop,
-}
 
 /// Signal on watchdog expiration.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]

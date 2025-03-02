@@ -105,3 +105,65 @@ impl InfluxDBWriter {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_debug_and_display_for_influxdbwriter() {
+        let writer = InfluxDBWriter::new(
+            "http://localhost:8086".to_string(),
+            "my-org".to_string(),
+            "my-token".to_string(),
+            "my-bucket".to_string(),
+        );
+        assert_eq!(
+            format!("{:?}", writer),
+            "InfluxDBWriter { client: { url: \"http://localhost:8086/\", org: \"my-org\", }, bucket: \"my-bucket\" }"
+        );
+        assert_eq!(
+            format!("{}", writer),
+            "InfluxDBWriter { client: { url: \"http://localhost:8086/\", org: \"my-org\", }, bucket: \"my-bucket\" }"
+        );
+    }
+
+    #[test]
+    fn test_display_for_clientext() {
+        let client = ClientExt(Client::new("http://localhost:8086", "my-org", "my-token"));
+        assert_eq!(
+            format!("{}", client),
+            "{ url: \"http://localhost:8086/\", org: \"my-org\", }"
+        );
+    }
+
+    #[test]
+    fn test_new_for_influxdbwriter() {
+        let writer = InfluxDBWriter::new(
+            "http://localhost:8086".to_string(),
+            "my-org".to_string(),
+            "my-token".to_string(),
+            "my-bucket".to_string(),
+        );
+        assert_eq!(writer.bucket, "my-bucket");
+        assert_eq!(
+            format!("{}", writer.client),
+            "{ url: \"http://localhost:8086/\", org: \"my-org\", }"
+        );
+    }
+
+    #[test]
+    fn test_with_client_for_influxdbwriter() {
+        let client = Arc::new(ClientExt(Client::new(
+            "http://localhost:8086",
+            "my-org",
+            "my-token",
+        )));
+        let writer = InfluxDBWriter::with_client(client.clone(), "my-bucket".to_string());
+        assert_eq!(writer.bucket, "my-bucket");
+        assert_eq!(
+            format!("{}", writer.client),
+            "{ url: \"http://localhost:8086/\", org: \"my-org\", }"
+        );
+    }
+}

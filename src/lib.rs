@@ -45,6 +45,21 @@ pub mod mqtt_client;
 /// InfluxDB client implementation
 pub mod influxdb;
 
+/// Watchdog Signal definition for use in tests and main
+pub mod watchdog {
+
+    /// Signal for interacting with the watchdog.
+    #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
+    #[allow(dead_code)]
+    pub enum Signal {
+        /// Reset the watchdog.
+        #[default]
+        Reset,
+        /// Stop the watchdog timer.
+        Stop,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

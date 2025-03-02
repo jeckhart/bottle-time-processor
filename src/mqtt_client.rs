@@ -1,15 +1,15 @@
-use crate::error::ResultExt;
-use async_trait::async_trait;
-use miette::{Report, Result};
-use regex::Regex;
-use rumqttc::{AsyncClient, EventLoop, MqttOptions, QoS};
 /// MQTT client implementation with support for filtered message subscriptions
 ///
 /// This module provides the core MQTT client functionality, including message
 /// filtering and subscription management.
-use std::collections::HashMap;
-use std::{fmt::Debug, future::Future, pin::Pin, sync::Arc};
-use tokio::sync::Mutex;
+use crate::error::ResultExt;
+use crate::{influxdb::InfluxDBWriter, models::KasaPowerMessage, watchdog::Signal};
+use async_trait::async_trait;
+use miette::{Report, Result};
+use regex::Regex;
+use rumqttc::{AsyncClient, EventLoop, MqttOptions, QoS};
+use std::{collections::HashMap, fmt::Debug, future::Future, pin::Pin, sync::Arc};
+use tokio::sync::{Mutex, mpsc::Sender};
 
 /// Trait for message filtering
 #[async_trait]
@@ -80,7 +80,7 @@ impl Subscription {
     }
 }
 
-impl std::fmt::Debug for Subscription {
+impl Debug for Subscription {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Subscription")
             .field("filter", &self.filter)
@@ -232,13 +232,40 @@ impl MqttClientManager {
     }
 }
 
-impl std::fmt::Debug for MqttClientManager {
+impl Debug for MqttClientManager {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("MqttClientManager")
             .field("client", &self.client)
             .field("subscriptions", &self.subscriptions)
             .finish()
     }
+}
+
+/// Process a message from the Kasa power monitor
+pub async fn process_message(
+    message: &str,
+    influxdb: &InfluxDBWriter,
+    reset_tx: Option<Sender<Signal>>,
+) -> miette::Result<()> {
+    let power_message: KasaPowerMessage =
+        serde_json::from_str(message).with_serde_json_context()?;
+    let readings = power_message.into_readings();
+
+    for reading in readings {
+        tracing::debug!("Writing reading to InfluxDB: {:?}", reading);
+        influxdb
+            .write_power_reading(&reading)
+            .await
+            .expect("Failed to write power reading to InfluxDB");
+    }
+
+    tracing::info!("Resetting watchdog timer");
+
+    if let Some(tx) = reset_tx {
+        tx.send(Signal::Reset).await.ok();
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
