@@ -1,7 +1,14 @@
 use async_trait::async_trait;
-use bottle_time_processor::influxdb::InfluxDbClient;
+use bottle_time_processor::{
+    influxdb::InfluxDbClient,
+    mqtt_client::{MessageCallback, MqttClientInterface},
+};
 use influxdb2::models::DataPoint;
-use std::fmt;
+use rumqttc::QoS;
+use std::{
+    fmt,
+    fmt::{Display, Formatter},
+};
 use tokio::sync::Mutex;
 
 /// A fake InfluxDB client for testing.
@@ -34,4 +41,52 @@ impl InfluxDbClient for FakeInfluxDbClient {
         data_points.push(point);
         Ok(())
     }
+}
+
+#[derive(Debug)]
+pub struct FakeMqttClient {
+    // This field records subscribe calls for later verification.
+    pub subscribe_calls: Mutex<Vec<(String, QoS)>>,
+}
+
+impl FakeMqttClient {
+    #[allow(dead_code)]
+    pub fn new() -> Self {
+        Self {
+            subscribe_calls: Mutex::new(vec![]),
+        }
+    }
+}
+
+impl Display for FakeMqttClient {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "FakeMqttClient")
+    }
+}
+
+#[async_trait]
+impl MqttClientInterface for FakeMqttClient {
+    async fn subscribe(&self, topic: &str, qos: QoS) -> miette::Result<()> {
+        self.subscribe_calls
+            .lock()
+            .await
+            .push((topic.to_string(), qos));
+        Ok(())
+    }
+}
+
+#[allow(dead_code)]
+/// Get a message callback for testing.
+pub fn get_msg_cb(expected_msg: String) -> MessageCallback {
+    Box::new(move |msg: String| {
+        Box::pin({
+            {
+                let value = expected_msg.clone();
+                async move {
+                    assert_eq!(msg, value);
+                    Ok(())
+                }
+            }
+        })
+    })
 }
