@@ -7,6 +7,7 @@ use bottle_time_processor::{
     watchdog::Signal,
 };
 use influxdb2::models::WriteDataPoint;
+use rumqttc::{ConnectReturnCode, ConnectionError, Event, QoS};
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, mpsc};
 
@@ -127,4 +128,44 @@ async fn test_mqtt_manager_subscribe() {
     let subs = manager.subscriptions.lock().await;
     assert_eq!(subs.len(), 1);
     assert_eq!(subs.get(&topic).unwrap().len(), 1);
+}
+
+#[tokio::test]
+async fn test_handle_event_message() {
+    let subscriptions = Arc::new(Mutex::new(HashMap::new()));
+
+    let topic = "test".to_string();
+    let payload = "test message".to_string();
+
+    let callback: MessageCallback = get_msg_cb("test message".to_string());
+
+    let subscription = Subscription {
+        filter: None,
+        callback: Box::new(callback),
+    };
+
+    {
+        let mut subs = subscriptions.lock().await;
+        subs.insert(topic.clone(), vec![subscription]);
+    }
+
+    let msg = Ok(Event::Incoming(rumqttc::Packet::Publish(
+        rumqttc::Publish {
+            topic: topic.clone(),
+            pkid: 0,
+            payload: payload.into(),
+            dup: false,
+            qos: QoS::AtMostOnce,
+            retain: false,
+        },
+    )));
+
+    let result = MqttClientManager::handle_event_message(msg, subscriptions.clone()).await;
+    assert!(result.is_ok());
+
+    let msg = Err(ConnectionError::ConnectionRefused(
+        ConnectReturnCode::BadClientId,
+    ));
+    let result = MqttClientManager::handle_event_message(msg, subscriptions.clone()).await;
+    assert!(result.is_err());
 }

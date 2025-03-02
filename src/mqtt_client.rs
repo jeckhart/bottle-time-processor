@@ -7,7 +7,7 @@ use crate::{influxdb::InfluxDBWriter, models::KasaPowerMessage, watchdog::Signal
 use async_trait::async_trait;
 use miette::{Report, Result};
 use regex::Regex;
-use rumqttc::{AsyncClient, EventLoop, MqttOptions, QoS};
+use rumqttc::{AsyncClient, ConnectionError, Event, EventLoop, MqttOptions, QoS};
 use std::{
     collections::HashMap,
     fmt::{Debug, Display, Formatter},
@@ -192,30 +192,44 @@ impl MqttClientManager {
         Ok(())
     }
 
+    /// Handle an incoming event message
+    pub async fn handle_event_message(
+        msg: Result<Event, ConnectionError>,
+        subscriptions: Arc<Mutex<HashMap<String, Vec<Subscription>>>>,
+    ) -> Result<(), ConnectionError> {
+        match msg {
+            Ok(notification) => {
+                if let Event::Incoming(rumqttc::Packet::Publish(msg)) = notification {
+                    let subs = subscriptions.lock().await;
+                    if let Some(topic_subs) = subs.get(&msg.topic) {
+                        let payload = String::from_utf8_lossy(&msg.payload);
+                        for subscription in topic_subs {
+                            if let Err(e) = subscription.handle_message(&payload).await {
+                                tracing::error!("Error in message callback: {}", e);
+                            }
+                        }
+                    }
+                }
+                Ok(())
+            }
+            Err(e) => {
+                tracing::error!("MQTT connection error: {}", e);
+                Err(e)
+            }
+        }
+    }
+
     /// Spawn a task to handle MQTT events
     pub async fn spawn_event_handler(&self, mut eventloop: EventLoop) -> Result<()> {
         let subscriptions = Arc::clone(&self.subscriptions);
 
         tokio::task::spawn(async move {
             loop {
-                match eventloop.poll().await {
-                    Ok(notification) => {
-                        if let rumqttc::Event::Incoming(rumqttc::Packet::Publish(msg)) =
-                            notification
-                        {
-                            let subs = subscriptions.lock().await;
-                            if let Some(topic_subs) = subs.get(&msg.topic) {
-                                let payload = String::from_utf8_lossy(&msg.payload);
-                                for subscription in topic_subs {
-                                    if let Err(e) = subscription.handle_message(&payload).await {
-                                        tracing::error!("Error in message callback: {}", e);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                let msg = eventloop.poll().await;
+                match Self::handle_event_message(msg, subscriptions.clone()).await {
+                    Ok(()) => (),
                     Err(e) => {
-                        tracing::error!("MQTT connection error: {}", e);
+                        tracing::error!("Error handling MQTT event: {}", e);
                         break;
                     }
                 }
