@@ -2,12 +2,25 @@ use crate::models::PowerReading;
 use futures::stream;
 use influxdb2::Client;
 use miette::{Error, Report, Result};
+use std::fmt::{Display, Formatter};
 
 /// A writer for InfluxDB
 #[derive(Debug, Clone)]
 pub struct InfluxDBWriter {
     client: Client,
     bucket: String,
+}
+
+impl Display for InfluxDBWriter {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "InfluxDBWriter {{ client: {{ url: {:?}, org: {:?}, }}, bucket: {:?} }}",
+            self.client.base.to_string(),
+            self.client.org,
+            self.bucket
+        )
+    }
 }
 
 impl InfluxDBWriter {
