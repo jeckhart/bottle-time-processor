@@ -82,7 +82,12 @@ where
         1 => tracing::Level::DEBUG,
         _ => tracing::Level::TRACE,
     };
-    tracing_subscriber::fmt().with_max_level(debug_level).init();
+    if let Err(e) = tracing_subscriber::fmt()
+        .with_max_level(debug_level)
+        .try_init()
+    {
+        eprintln!("Failed to set global subscriber: {}", e);
+    }
 
     opts
 }
@@ -142,6 +147,57 @@ mod tests {
             "bucket",
         ];
         let opts = parse(Some(args.iter().map(|x| x.to_string())));
+
+        assert_eq!(opts.influxdb_token, "token");
+        assert_eq!(opts.influxdb_org, "org");
+        assert_eq!(opts.influxdb_bucket, "bucket");
+    }
+
+    #[test]
+    fn test_verbose() {
+        let args = vec![
+            "bottle-time-processor",
+            "-v",
+            "--influxdb-token",
+            "token",
+            "--influxdb-org",
+            "org",
+            "--influxdb-bucket",
+            "bucket",
+        ];
+        let opts = parse(Some(args.iter().map(|x| x.to_string())));
+
+        assert_eq!(opts.verbose, 1);
+    }
+
+    #[test]
+    fn test_very_verbose() {
+        let args = vec![
+            "bottle-time-processor",
+            "-vv",
+            "--influxdb-token",
+            "token",
+            "--influxdb-org",
+            "org",
+            "--influxdb-bucket",
+            "bucket",
+        ];
+        let opts = parse(Some(args.iter().map(|x| x.to_string())));
+
+        assert_eq!(opts.verbose, 2);
+    }
+
+    #[ignore]
+    #[test]
+    /// Not yet working, this test fails because the "args" that clap picks up are the args
+    /// from the test command. I don't know how to fix this yet.
+    fn test_all_args() {
+        unsafe {
+            std::env::set_var("INFLUX_TOKEN", "token");
+            std::env::set_var("INFLUX_ORG", "org");
+            std::env::set_var("INFLUX_BUCKET", "bucket");
+        }
+        let opts = parse::<Vec<String>>(None);
 
         assert_eq!(opts.influxdb_token, "token");
         assert_eq!(opts.influxdb_org, "org");
