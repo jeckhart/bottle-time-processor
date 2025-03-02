@@ -89,9 +89,32 @@ impl std::fmt::Debug for Subscription {
     }
 }
 
-/// MQTT Client Manager
-pub struct MqttClientManager {
+/// An abstraction over the MQTT client functionality allowing dependency injection.
+#[async_trait]
+pub trait MqttClientInterface: Send + Sync + Debug {
+    /// Subscribe to a topic with a given QoS
+    async fn subscribe(&self, topic: &str, qos: QoS) -> Result<()>;
+}
+
+/// The production implementation wrapping `rumqttc`’s `AsyncClient`.
+#[derive(Debug)]
+pub struct RealMqttClient {
     client: AsyncClient,
+}
+
+#[async_trait]
+impl MqttClientInterface for RealMqttClient {
+    async fn subscribe(&self, topic: &str, qos: QoS) -> Result<()> {
+        // The real client subscribes to the topic and sets up subscription context.
+        let sub = self.client.subscribe(topic, qos).await;
+        sub.with_subscription_context(topic)?;
+        Ok(())
+    }
+}
+
+/// The MQTT client manager
+pub struct MqttClientManager {
+    client: Arc<dyn MqttClientInterface>,
     subscriptions: Arc<Mutex<HashMap<String, Vec<Subscription>>>>,
 }
 
@@ -99,13 +122,16 @@ impl MqttClientManager {
     /// Create a new MQTT client manager
     pub fn new(mqtt_options: MqttOptions) -> Result<(Self, EventLoop)> {
         let (client, eventloop) = AsyncClient::new(mqtt_options, 10);
-        Ok((
-            Self {
-                client,
-                subscriptions: Arc::new(Mutex::new(HashMap::new())),
-            },
-            eventloop,
-        ))
+        let real_client = RealMqttClient { client };
+        Ok((Self::with_client(Arc::new(real_client)), eventloop))
+    }
+
+    /// Alternative constructor to allow injection of a custom client (for tests).
+    pub fn with_client(client: Arc<dyn MqttClientInterface>) -> Self {
+        Self {
+            client,
+            subscriptions: Arc::new(Mutex::new(HashMap::new())),
+        }
     }
 
     /// Subscribe to a topic with an optional filter and callback
@@ -122,10 +148,7 @@ impl MqttClientManager {
 
         // Subscribe to MQTT topic if this is the first subscription
         if !subs.contains_key(&topic) {
-            self.client
-                .subscribe(&topic, QoS::AtMostOnce)
-                .await
-                .with_subscription_context(&topic)?;
+            self.client.subscribe(&topic, QoS::AtMostOnce).await?;
             subs.insert(topic.clone(), Vec::new());
         }
 
@@ -222,6 +245,31 @@ impl std::fmt::Debug for MqttClientManager {
 mod tests {
     use super::*;
 
+    #[derive(Debug)]
+    struct FakeMqttClient {
+        // This field records subscribe calls for later verification.
+        pub subscribe_calls: Mutex<Vec<(String, QoS)>>,
+    }
+
+    impl FakeMqttClient {
+        fn new() -> Self {
+            Self {
+                subscribe_calls: Mutex::new(vec![]),
+            }
+        }
+    }
+
+    #[async_trait]
+    impl MqttClientInterface for FakeMqttClient {
+        async fn subscribe(&self, topic: &str, qos: QoS) -> Result<()> {
+            self.subscribe_calls
+                .lock()
+                .await
+                .push((topic.to_string(), qos));
+            Ok(())
+        }
+    }
+
     #[test]
     fn test_contains_filter() {
         let filter = ContainsFilter("test".to_string());
@@ -272,10 +320,24 @@ mod tests {
         assert_eq!(format!("{:?}", func), "FunctionFilter(\"<function>\")");
     }
 
+    fn get_msg_cb(expected_msg: String) -> MessageCallback {
+        Box::new(move |msg: String| {
+            Box::pin({
+                {
+                    let value = expected_msg.clone();
+                    async move {
+                        assert_eq!(msg, value);
+                        Ok(())
+                    }
+                }
+            })
+        })
+    }
+
     #[tokio::test]
     async fn test_handle_message() {
         let manager = MqttClientManager {
-            client: AsyncClient::new(MqttOptions::new("test", "localhost", 1883), 10).0,
+            client: Arc::new(FakeMqttClient::new()),
             subscriptions: Arc::new(Mutex::new(HashMap::new())),
         };
 
@@ -284,14 +346,7 @@ mod tests {
 
         let filter = ContainsFilter("test".to_string());
 
-        let callback: MessageCallback = Box::new(|msg: String| {
-            Box::pin({
-                async move {
-                    assert_eq!(msg, "test message");
-                    Ok(())
-                }
-            })
-        });
+        let callback: MessageCallback = get_msg_cb("test message".to_string());
 
         let subscription = Subscription {
             filter: Some(Box::new(filter)),
@@ -305,17 +360,34 @@ mod tests {
         manager.handle_message(&topic, &payload).await.unwrap();
     }
 
+    #[tokio::test]
+    async fn test_handle_message_none_filter() {
+        let manager = MqttClientManager {
+            client: Arc::new(FakeMqttClient::new()),
+            subscriptions: Arc::new(Mutex::new(HashMap::new())),
+        };
+
+        let topic = "test".to_string();
+        let payload = "test message".to_string();
+
+        let callback: MessageCallback = get_msg_cb("test message".to_string());
+
+        let subscription = Subscription {
+            filter: None,
+            callback: Box::new(callback),
+        };
+
+        {
+            let mut subs = manager.subscriptions.lock().await;
+            subs.insert(topic.clone(), vec![subscription]);
+        }
+        manager.handle_message(&topic, &payload).await.unwrap();
+    }
+
     #[test]
     fn test_format_for_subscription() {
         let filter = ContainsFilter("test".to_string());
-        let callback: MessageCallback = Box::new(|msg: String| {
-            Box::pin({
-                async move {
-                    assert_eq!(msg, "test message");
-                    Ok(())
-                }
-            })
-        });
+        let callback: MessageCallback = get_msg_cb("test message".to_string());
 
         let subscription = Subscription {
             filter: Some(Box::new(filter)),
@@ -331,7 +403,7 @@ mod tests {
     #[test]
     fn test_format_for_mqtt_manager() {
         let manager = MqttClientManager {
-            client: AsyncClient::new(MqttOptions::new("test", "localhost", 1883), 10).0,
+            client: Arc::new(FakeMqttClient::new()),
             subscriptions: Arc::new(Mutex::new(HashMap::new())),
         };
 
@@ -339,8 +411,51 @@ mod tests {
             format!("{:?}", manager),
             format!(
                 "MqttClientManager {{ client: {:?}, subscriptions: Mutex {{ data: {{}} }} }}",
-                AsyncClient::new(MqttOptions::new("test", "localhost", 1883), 10).0
+                FakeMqttClient::new()
             )
         )
+    }
+
+    #[tokio::test]
+    async fn test_new_mqtt_manager() {
+        let (manager, _) =
+            MqttClientManager::new(MqttOptions::new("test", "localhost", 1883)).unwrap();
+        assert_eq!(manager.subscriptions.lock().await.len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_mqtt_manager_subscribe() {
+        let manager = MqttClientManager {
+            client: Arc::new(FakeMqttClient::new()),
+            subscriptions: Arc::new(Mutex::new(HashMap::new())),
+        };
+
+        let topic = "test".to_string();
+        let filter = ContainsFilter("test".to_string());
+        let callback: MessageCallback = get_msg_cb("test message".to_string());
+
+        manager
+            .subscribe(topic.clone(), Some(Box::new(filter)), callback)
+            .await
+            .unwrap();
+
+        let subs = manager.subscriptions.lock().await;
+        assert_eq!(subs.len(), 1);
+        assert_eq!(subs.get(&topic).unwrap().len(), 1);
+    }
+
+    #[ignore]
+    /// This test is ignored because it requires a running MQTT broker
+    #[tokio::test]
+    async fn test_real_mqtt_client_interface_subscribe() {
+        let client = RealMqttClient {
+            client: AsyncClient::new(MqttOptions::new("test", "localhost", 1883), 10).0,
+        };
+
+        let topic = "test";
+        let qos = QoS::AtMostOnce;
+
+        let result = client.subscribe(topic, qos).await;
+        assert!(result.is_ok());
     }
 }
