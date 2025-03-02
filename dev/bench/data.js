@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740890052829,
+  "lastUpdate": 1740944004234,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -353,6 +353,36 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/jeckhart/bottle-time-processor/commit/38875ad9f54ff258e3f6d85a28649b0b695e6c5d"
         },
         "date": 1740890052474,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "add",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0da0c60c7b4a956e1504f4e1fe80b9c248a2f929",
+          "message": "Merge pull request #34 from jeckhart/je-expand-test-coverage\n\ntest: Add more tests for command_line and add tests to verify more of our mqtt_client setup.",
+          "timestamp": "2025-03-02T14:32:21-05:00",
+          "tree_id": "f30b8e76814ca896477c0bf1999660f00c13b09e",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/0da0c60c7b4a956e1504f4e1fe80b9c248a2f929"
+        },
+        "date": 1740944003797,
         "tool": "cargo",
         "benches": [
           {
