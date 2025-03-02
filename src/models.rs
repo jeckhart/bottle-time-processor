@@ -68,3 +68,46 @@ impl KasaPowerMessage {
         readings
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_kasa_power_into_readings() {
+        let message = KasaPowerMessage {
+            alias: "Test Device".to_string(),
+            device_id: "test-device".to_string(),
+            power_total: 0,
+            voltages_mv: vec![12000, 12001, 12002],
+            currents_ma: vec![100, 101, 102],
+            powers_mw: vec![1200, 1201, 1202],
+            timestamps: vec![1614556800, 1614556860, 1614556920],
+            num_readings: 3,
+        };
+
+        let readings = message.into_readings();
+        assert_eq!(readings.len(), 3);
+
+        assert_eq!(readings[0].device_name, "Test Device");
+        assert_eq!(readings[0].device_id, "test-device");
+        assert_eq!(readings[0].voltage_mv, 12000);
+        assert_eq!(readings[0].current_ma, 100);
+        assert_eq!(readings[0].power_mw, 1200);
+        assert_eq!(readings[0].timestamp.timestamp(), 1614556800);
+
+        assert_eq!(readings[1].device_name, "Test Device");
+        assert_eq!(readings[1].device_id, "test-device");
+        assert_eq!(readings[1].voltage_mv, 12001);
+        assert_eq!(readings[1].current_ma, 101);
+        assert_eq!(readings[1].power_mw, 1201);
+        assert_eq!(readings[1].timestamp.timestamp(), 1614556860);
+
+        assert_eq!(readings[2].device_name, "Test Device");
+        assert_eq!(readings[2].device_id, "test-device");
+        assert_eq!(readings[2].voltage_mv, 12002);
+        assert_eq!(readings[2].current_ma, 102);
+        assert_eq!(readings[2].power_mw, 1202);
+        assert_eq!(readings[2].timestamp.timestamp(), 1614556920);
+    }
+}
