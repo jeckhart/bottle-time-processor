@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740944050804,
+  "lastUpdate": 1740955118458,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -413,6 +413,36 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/jeckhart/bottle-time-processor/commit/75d6ee3f7d8e92ae5f0ee997f05e19623785b43f"
         },
         "date": 1740944050486,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "add",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ca453df8cba5d998169ef0b68f36e8d8f520441a",
+          "message": "Merge pull request #35 from jeckhart/je-expand-test-coverage\n\ntest: Split up influxdb to support client mocking and testing\n- Add tests for process_message in mqtt using the split out influxdb\n- Allow a stub client to be passed to InfluxDBWriter for testing\n- Move FakeInfluxDbClient to integration test common mod\n- Add tests for process_message to integration tests\n- Split watchdog part for main (the setup and commandline options) and the Signal def\n- Add more tests for influxdb\n- Move process_message to mqtt_client def\n- Move from unmaintained action-rs/install to taiki-e/cache-cargo-install-action\n- Dont install grcov if we arent using it\n- Remove commented out sections that arent used",
+          "timestamp": "2025-03-02T17:37:51-05:00",
+          "tree_id": "94e430cae55937453ae98f53f6574c8ab24c8e7a",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/ca453df8cba5d998169ef0b68f36e8d8f520441a"
+        },
+        "date": 1740955118009,
         "tool": "cargo",
         "benches": [
           {
