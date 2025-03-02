@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740944004234,
+  "lastUpdate": 1740944050804,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -383,6 +383,36 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/jeckhart/bottle-time-processor/commit/0da0c60c7b4a956e1504f4e1fe80b9c248a2f929"
         },
         "date": 1740944003797,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "add",
+            "value": 0,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "distinct": true,
+          "id": "75d6ee3f7d8e92ae5f0ee997f05e19623785b43f",
+          "message": "chore: Remove unused codecov actions now that we see it working",
+          "timestamp": "2025-03-02T14:33:21-05:00",
+          "tree_id": "52b843242278a482327ef45a99b073f65b268306",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/75d6ee3f7d8e92ae5f0ee997f05e19623785b43f"
+        },
+        "date": 1740944050486,
         "tool": "cargo",
         "benches": [
           {
