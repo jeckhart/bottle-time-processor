@@ -73,7 +73,7 @@ systemd = { version = "0.10", default-features = false, features = [], optional 
 openssl = { version = "0.10", features = ["vendored"] }
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = { version = "0.5", features = ["async_tokio"] }
 proptest = "1.1"
 
 [metadata.docs.rs]

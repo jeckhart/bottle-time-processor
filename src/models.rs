@@ -1,7 +1,7 @@
 use chrono::{DateTime, Local, TimeZone};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 /// Represents a power measurement message from a Kasa smart plug device
 pub struct KasaPowerMessage {
     /// Human-readable name of the device

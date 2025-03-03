@@ -1,6 +1,7 @@
 ignore:
   - "tests"
   - "benches"
+  - "src/test_utils"
 
 comment:
   layout: "reach, diff, flags, files"

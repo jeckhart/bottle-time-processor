@@ -62,12 +62,22 @@ async fn subscribe_to_topic(
 mod tests {
     use super::*;
     use crate::command_line::Options;
+    use async_trait::async_trait;
+    use bottle_time_processor::mqtt_client::MqttClientInterface;
     use clap::Parser;
+    use rumqttc::QoS;
+    use std::{
+        fmt::{Display, Formatter},
+        sync::Arc,
+    };
+    use tokio::sync::Mutex;
 
     fn get_default_opts() -> Options {
         Options::try_parse_from(
             vec![
                 "bottle-time-processor",
+                "--influxdb-url",
+                "http://localhost:8086",
                 "--influxdb-token",
                 "token",
                 "--influxdb-org",
@@ -80,10 +90,55 @@ mod tests {
                 "user",
                 "--password",
                 "pass",
+                "--topic",
+                "username/feeds/topic1",
             ]
             .iter(),
         )
         .unwrap()
+    }
+
+    #[derive(Debug)]
+    pub struct FakeMqttClient {
+        // This field records subscribe calls for later verification.
+        pub subscribe_calls: Mutex<Vec<(String, QoS)>>,
+    }
+
+    impl FakeMqttClient {
+        pub fn new() -> Self {
+            Self {
+                subscribe_calls: Mutex::new(vec![]),
+            }
+        }
+    }
+
+    impl Display for FakeMqttClient {
+        fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+            write!(f, "FakeMqttClient")
+        }
+    }
+
+    #[async_trait]
+    impl MqttClientInterface for FakeMqttClient {
+        async fn subscribe(&self, topic: &str, qos: QoS) -> miette::Result<()> {
+            self.subscribe_calls
+                .lock()
+                .await
+                .push((topic.to_string(), qos));
+            Ok(())
+        }
+    }
+
+    #[tokio::test]
+    async fn test_setup_mqtt() {
+        let opts = get_default_opts();
+
+        let mqtt_client_manager = setup_mqtt(&opts, None).await.unwrap();
+
+        assert_eq!(
+            mqtt_client_manager.to_string(),
+            "MqttClientManager { client: RealMqttClient { client: AsyncClient { request_tx: Sender } }, subscriptions: Mutex { data: {\"username/feeds/topic1\": [Subscription { filter: None, callback: \"<function>\" }]} }"
+        );
     }
 
     #[tokio::test]
@@ -108,5 +163,19 @@ mod tests {
             writer.to_string(),
             "InfluxDBWriter { client: { url: \"http://localhost:8086/\", org: \"org\", }, bucket: \"bucket\" }"
         );
+    }
+
+    #[tokio::test]
+    async fn test_subscribe_to_topic() {
+        let opts = get_default_opts();
+        let fake_client = Arc::new(FakeMqttClient::new());
+        let mqtt_client_manager = MqttClientManager::with_client(fake_client);
+        let influxdb = create_influxdb_writer(&opts);
+
+        subscribe_to_topic(&mqtt_client_manager, &opts, influxdb, None)
+            .await
+            .unwrap();
+
+        assert_eq!(mqtt_client_manager.subscriptions.lock().await.len(), 1);
     }
 }

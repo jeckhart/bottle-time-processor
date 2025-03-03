@@ -1,7 +1,6 @@
 //! bottle-time-processor
 
 use crate::watchdog::{Expired, Watchdog};
-use bottle_time_processor::dummy_task;
 use futures::future::pending;
 use miette::Error;
 use std::{pin::Pin, time::Duration};
@@ -73,13 +72,11 @@ async fn main() -> miette::Result<()> {
     // Setup the watchdog timer
     let watchdog: Pin<Box<Watchdog>> = Box::pin(watchdog::setup_watchdog(&opts).await?);
 
-    // let (reset_tx, expire_rx) = watchdog.run();
     let (reset_tx, reset_rx) = mpsc::channel(16);
     let (expire_tx, expire_rx) = oneshot::channel();
 
     // Initialize and run subsystems
     Toplevel::new(|s| async move {
-        s.start(SubsystemBuilder::new("dummy_task", dummy_task));
         s.start(SubsystemBuilder::new(
             "watchdog_loop",
             |_subsys| async move { watchdog.watchdog_loop(reset_rx, expire_tx).await },

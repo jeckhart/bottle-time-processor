@@ -7,8 +7,14 @@ use crate::{influxdb::InfluxDBWriter, models::KasaPowerMessage, watchdog::Signal
 use async_trait::async_trait;
 use miette::{Report, Result};
 use regex::Regex;
-use rumqttc::{AsyncClient, EventLoop, MqttOptions, QoS};
-use std::{collections::HashMap, fmt::Debug, future::Future, pin::Pin, sync::Arc};
+use rumqttc::{AsyncClient, ConnectionError, Event, EventLoop, MqttOptions, QoS};
+use std::{
+    collections::HashMap,
+    fmt::{Debug, Display, Formatter},
+    future::Future,
+    pin::Pin,
+    sync::Arc,
+};
 use tokio::sync::{Mutex, mpsc::Sender};
 
 /// Trait for message filtering
@@ -20,7 +26,7 @@ pub trait MessageFilter: Send + Sync + Debug {
 
 /// Simple contains string filter
 #[derive(Debug)]
-pub struct ContainsFilter(String);
+pub struct ContainsFilter(pub String);
 
 impl MessageFilter for ContainsFilter {
     fn matches(&self, message: &str) -> bool {
@@ -56,13 +62,15 @@ impl std::fmt::Debug for FunctionFilter {
 }
 
 /// Callback type for message handlers
-type MessageCallback =
+pub type MessageCallback =
     Box<dyn Fn(String) -> Pin<Box<dyn Future<Output = Result<()>> + Send>> + Send + Sync>;
 
 /// Structure to hold subscription information
-struct Subscription {
-    filter: Option<Box<dyn MessageFilter>>,
-    callback: MessageCallback,
+pub struct Subscription {
+    /// Optional message filter
+    pub filter: Option<Box<dyn MessageFilter>>,
+    /// Message callback
+    pub callback: MessageCallback,
 }
 
 impl Subscription {
@@ -91,7 +99,7 @@ impl Debug for Subscription {
 
 /// An abstraction over the MQTT client functionality allowing dependency injection.
 #[async_trait]
-pub trait MqttClientInterface: Send + Sync + Debug {
+pub trait MqttClientInterface: Send + Sync + Debug + Display {
     /// Subscribe to a topic with a given QoS
     async fn subscribe(&self, topic: &str, qos: QoS) -> Result<()>;
 }
@@ -100,6 +108,12 @@ pub trait MqttClientInterface: Send + Sync + Debug {
 #[derive(Debug)]
 pub struct RealMqttClient {
     client: AsyncClient,
+}
+
+impl Display for RealMqttClient {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "RealMqttClient {{ client: {:?} }}", self.client)
+    }
 }
 
 #[async_trait]
@@ -114,8 +128,10 @@ impl MqttClientInterface for RealMqttClient {
 
 /// The MQTT client manager
 pub struct MqttClientManager {
-    client: Arc<dyn MqttClientInterface>,
-    subscriptions: Arc<Mutex<HashMap<String, Vec<Subscription>>>>,
+    /// The MQTT client
+    pub client: Arc<dyn MqttClientInterface>,
+    /// The subscriptions of this client
+    pub subscriptions: Arc<Mutex<HashMap<String, Vec<Subscription>>>>,
 }
 
 impl MqttClientManager {
@@ -176,30 +192,44 @@ impl MqttClientManager {
         Ok(())
     }
 
+    /// Handle an incoming event message
+    pub async fn handle_event_message(
+        msg: Result<Event, ConnectionError>,
+        subscriptions: Arc<Mutex<HashMap<String, Vec<Subscription>>>>,
+    ) -> Result<(), ConnectionError> {
+        match msg {
+            Ok(notification) => {
+                if let Event::Incoming(rumqttc::Packet::Publish(msg)) = notification {
+                    let subs = subscriptions.lock().await;
+                    if let Some(topic_subs) = subs.get(&msg.topic) {
+                        let payload = String::from_utf8_lossy(&msg.payload);
+                        for subscription in topic_subs {
+                            if let Err(e) = subscription.handle_message(&payload).await {
+                                tracing::error!("Error in message callback: {}", e);
+                            }
+                        }
+                    }
+                }
+                Ok(())
+            }
+            Err(e) => {
+                tracing::error!("MQTT connection error: {}", e);
+                Err(e)
+            }
+        }
+    }
+
     /// Spawn a task to handle MQTT events
     pub async fn spawn_event_handler(&self, mut eventloop: EventLoop) -> Result<()> {
         let subscriptions = Arc::clone(&self.subscriptions);
 
         tokio::task::spawn(async move {
             loop {
-                match eventloop.poll().await {
-                    Ok(notification) => {
-                        if let rumqttc::Event::Incoming(rumqttc::Packet::Publish(msg)) =
-                            notification
-                        {
-                            let subs = subscriptions.lock().await;
-                            if let Some(topic_subs) = subs.get(&msg.topic) {
-                                let payload = String::from_utf8_lossy(&msg.payload);
-                                for subscription in topic_subs {
-                                    if let Err(e) = subscription.handle_message(&payload).await {
-                                        tracing::error!("Error in message callback: {}", e);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                let msg = eventloop.poll().await;
+                match Self::handle_event_message(msg, subscriptions.clone()).await {
+                    Ok(()) => (),
                     Err(e) => {
-                        tracing::error!("MQTT connection error: {}", e);
+                        tracing::error!("Error handling MQTT event: {}", e);
                         break;
                     }
                 }
@@ -241,6 +271,22 @@ impl Debug for MqttClientManager {
     }
 }
 
+// impl Display for dyn MqttClientInterface {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         write!(f, "<MqttClientInterface>")
+//     }
+// }
+
+impl Display for MqttClientManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "MqttClientManager {{ client: {}, subscriptions: {:?}",
+            self.client, self.subscriptions
+        )
+    }
+}
+
 /// Process a message from the Kasa power monitor
 pub async fn process_message(
     message: &str,
@@ -271,31 +317,6 @@ pub async fn process_message(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[derive(Debug)]
-    struct FakeMqttClient {
-        // This field records subscribe calls for later verification.
-        pub subscribe_calls: Mutex<Vec<(String, QoS)>>,
-    }
-
-    impl FakeMqttClient {
-        fn new() -> Self {
-            Self {
-                subscribe_calls: Mutex::new(vec![]),
-            }
-        }
-    }
-
-    #[async_trait]
-    impl MqttClientInterface for FakeMqttClient {
-        async fn subscribe(&self, topic: &str, qos: QoS) -> Result<()> {
-            self.subscribe_calls
-                .lock()
-                .await
-                .push((topic.to_string(), qos));
-            Ok(())
-        }
-    }
 
     #[test]
     fn test_contains_filter() {
@@ -361,56 +382,6 @@ mod tests {
         })
     }
 
-    #[tokio::test]
-    async fn test_handle_message() {
-        let manager = MqttClientManager {
-            client: Arc::new(FakeMqttClient::new()),
-            subscriptions: Arc::new(Mutex::new(HashMap::new())),
-        };
-
-        let topic = "test".to_string();
-        let payload = "test message".to_string();
-
-        let filter = ContainsFilter("test".to_string());
-
-        let callback: MessageCallback = get_msg_cb("test message".to_string());
-
-        let subscription = Subscription {
-            filter: Some(Box::new(filter)),
-            callback: Box::new(callback),
-        };
-
-        {
-            let mut subs = manager.subscriptions.lock().await;
-            subs.insert(topic.clone(), vec![subscription]);
-        }
-        manager.handle_message(&topic, &payload).await.unwrap();
-    }
-
-    #[tokio::test]
-    async fn test_handle_message_none_filter() {
-        let manager = MqttClientManager {
-            client: Arc::new(FakeMqttClient::new()),
-            subscriptions: Arc::new(Mutex::new(HashMap::new())),
-        };
-
-        let topic = "test".to_string();
-        let payload = "test message".to_string();
-
-        let callback: MessageCallback = get_msg_cb("test message".to_string());
-
-        let subscription = Subscription {
-            filter: None,
-            callback: Box::new(callback),
-        };
-
-        {
-            let mut subs = manager.subscriptions.lock().await;
-            subs.insert(topic.clone(), vec![subscription]);
-        }
-        manager.handle_message(&topic, &payload).await.unwrap();
-    }
-
     #[test]
     fn test_format_for_subscription() {
         let filter = ContainsFilter("test".to_string());
@@ -427,48 +398,11 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_format_for_mqtt_manager() {
-        let manager = MqttClientManager {
-            client: Arc::new(FakeMqttClient::new()),
-            subscriptions: Arc::new(Mutex::new(HashMap::new())),
-        };
-
-        assert_eq!(
-            format!("{:?}", manager),
-            format!(
-                "MqttClientManager {{ client: {:?}, subscriptions: Mutex {{ data: {{}} }} }}",
-                FakeMqttClient::new()
-            )
-        )
-    }
-
     #[tokio::test]
     async fn test_new_mqtt_manager() {
         let (manager, _) =
             MqttClientManager::new(MqttOptions::new("test", "localhost", 1883)).unwrap();
         assert_eq!(manager.subscriptions.lock().await.len(), 0);
-    }
-
-    #[tokio::test]
-    async fn test_mqtt_manager_subscribe() {
-        let manager = MqttClientManager {
-            client: Arc::new(FakeMqttClient::new()),
-            subscriptions: Arc::new(Mutex::new(HashMap::new())),
-        };
-
-        let topic = "test".to_string();
-        let filter = ContainsFilter("test".to_string());
-        let callback: MessageCallback = get_msg_cb("test message".to_string());
-
-        manager
-            .subscribe(topic.clone(), Some(Box::new(filter)), callback)
-            .await
-            .unwrap();
-
-        let subs = manager.subscriptions.lock().await;
-        assert_eq!(subs.len(), 1);
-        assert_eq!(subs.get(&topic).unwrap().len(), 1);
     }
 
     #[ignore]

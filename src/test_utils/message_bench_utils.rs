@@ -1,8 +1,5 @@
+use crate::{influxdb::InfluxDbClient, mqtt_client::MqttClientInterface};
 use async_trait::async_trait;
-use bottle_time_processor::{
-    influxdb::InfluxDbClient,
-    mqtt_client::{MessageCallback, MqttClientInterface},
-};
 use influxdb2::models::DataPoint;
 use rumqttc::QoS;
 use std::{
@@ -12,17 +9,22 @@ use std::{
 use tokio::sync::Mutex;
 
 /// A fake InfluxDB client for testing.
+#[derive(Debug)]
 pub struct FakeInfluxDbClient {
-    pub data_points_written: Mutex<Vec<DataPoint>>,
+    data_points_written: Option<Mutex<Vec<DataPoint>>>,
 }
 
 /// Implement the trait for the fake InfluxDB client.
 impl FakeInfluxDbClient {
     #[allow(dead_code)]
     /// Create a new instance of the fake InfluxDB client.
-    pub fn new() -> Self {
+    pub fn new(track_points: bool) -> Self {
         Self {
-            data_points_written: Mutex::new(Vec::new()),
+            data_points_written: if track_points {
+                Some(Mutex::new(Vec::new()))
+            } else {
+                None
+            },
         }
     }
 }
@@ -37,23 +39,32 @@ impl fmt::Display for FakeInfluxDbClient {
 #[async_trait]
 impl InfluxDbClient for FakeInfluxDbClient {
     async fn write_data_point(&self, _bucket: &str, point: DataPoint) -> Result<(), miette::Error> {
-        let mut data_points = self.data_points_written.lock().await;
-        data_points.push(point);
+        match &self.data_points_written {
+            Some(x) => {
+                let mut data_points = x.lock().await;
+                data_points.push(point);
+            }
+            None => {}
+        }
         Ok(())
     }
 }
 
 #[derive(Debug)]
-pub struct FakeMqttClient {
+struct FakeMqttClient {
     // This field records subscribe calls for later verification.
-    pub subscribe_calls: Mutex<Vec<(String, QoS)>>,
+    subscribe_calls: Option<Mutex<Vec<(String, QoS)>>>,
 }
 
 impl FakeMqttClient {
     #[allow(dead_code)]
-    pub fn new() -> Self {
+    fn new(track_points: bool) -> Self {
         Self {
-            subscribe_calls: Mutex::new(vec![]),
+            subscribe_calls: if track_points {
+                Some(Mutex::new(vec![]))
+            } else {
+                None
+            },
         }
     }
 }
@@ -67,26 +78,12 @@ impl Display for FakeMqttClient {
 #[async_trait]
 impl MqttClientInterface for FakeMqttClient {
     async fn subscribe(&self, topic: &str, qos: QoS) -> miette::Result<()> {
-        self.subscribe_calls
-            .lock()
-            .await
-            .push((topic.to_string(), qos));
+        match &self.subscribe_calls {
+            Some(x) => {
+                x.lock().await.push((topic.to_string(), qos));
+            }
+            None => {}
+        }
         Ok(())
     }
-}
-
-#[allow(dead_code)]
-/// Get a message callback for testing.
-pub fn get_msg_cb(expected_msg: String) -> MessageCallback {
-    Box::new(move |msg: String| {
-        Box::pin({
-            {
-                let value = expected_msg.clone();
-                async move {
-                    assert_eq!(msg, value);
-                    Ok(())
-                }
-            }
-        })
-    })
 }
