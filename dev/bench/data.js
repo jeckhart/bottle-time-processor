@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740955118458,
+  "lastUpdate": 1740979179092,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -449,6 +449,42 @@ window.BENCHMARK_DATA = {
             "name": "add",
             "value": 0,
             "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cc1674cbec79ed6324ea407e0f22de36bdd29bf7",
+          "message": "Merge pull request #36 from jeckhart/je-expand-test-coverage\n\nFurther expand test coverage\n\n- Ignore test_utils in codecov. These are all test utils\n- fix benchmarks to actually benchmark our code instead of sample code\n- test: Add tests for MqttClientManager::handle_event_message\n- Move more tests to the integration testing area\n- Cleanup some dead code\n- Unfortunately, it looks like I had to duplicate the FakeMqttClient to get it to work in different modules\n- Add a bit more testing for mqtt.rs",
+          "timestamp": "2025-03-03T00:18:34-05:00",
+          "tree_id": "a5355f9f5b28d6c809b82a5ebb8effcbffe022e6",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/cc1674cbec79ed6324ea407e0f22de36bdd29bf7"
+        },
+        "date": 1740979178787,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "message_into_reading",
+            "value": 555,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "write_power_reading",
+            "value": 415,
+            "range": "± 3",
             "unit": "ns/iter"
           }
         ]
