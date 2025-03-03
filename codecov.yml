@@ -2,6 +2,7 @@ ignore:
   - "tests"
   - "benches"
   - "src/test_utils"
+  - "main.rs"
 
 comment:
   layout: "reach, diff, flags, files"
