@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740979376705,
+  "lastUpdate": 1741020767531,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -521,6 +521,42 @@ window.BENCHMARK_DATA = {
             "name": "write_power_reading",
             "value": 427,
             "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "distinct": true,
+          "id": "279ceeff0db649d6f2859f4eed80aa5a5413d496",
+          "message": "ci: enable security-audit to write security events and create issues based on findings",
+          "timestamp": "2025-03-03T11:51:27-05:00",
+          "tree_id": "6182cef0167a791b856c0fc312f985f7168f7116",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/279ceeff0db649d6f2859f4eed80aa5a5413d496"
+        },
+        "date": 1741020767070,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "message_into_reading",
+            "value": 582,
+            "range": "± 35",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "write_power_reading",
+            "value": 593,
+            "range": "± 1",
             "unit": "ns/iter"
           }
         ]
