@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1740979179092,
+  "lastUpdate": 1740979376705,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -484,6 +484,42 @@ window.BENCHMARK_DATA = {
           {
             "name": "write_power_reading",
             "value": 415,
+            "range": "± 3",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "distinct": true,
+          "id": "618b71f87b46832eed2681a5a6e64576e8120792",
+          "message": "build: ignore main.rs from code coverage. Our coverage is focused on the files called from main",
+          "timestamp": "2025-03-03T00:21:46-05:00",
+          "tree_id": "613ea98fd9941ba8df12a1b8c2493a633d16d7df",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/618b71f87b46832eed2681a5a6e64576e8120792"
+        },
+        "date": 1740979375850,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "message_into_reading",
+            "value": 555,
+            "range": "± 36",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "write_power_reading",
+            "value": 427,
             "range": "± 3",
             "unit": "ns/iter"
           }
