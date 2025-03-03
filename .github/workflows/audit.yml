@@ -8,9 +8,13 @@ on:
         - '**/Cargo.toml'
         - '**/Cargo.lock'
 
-
 jobs:
   security-audit:
+    permissions:
+      checks: write
+      issues: write
+      security-events: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
