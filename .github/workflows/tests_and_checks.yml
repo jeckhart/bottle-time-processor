@@ -37,6 +37,12 @@ jobs:
       - name: Cache Project
         uses: Swatinem/rust-cache@v2
 
+      - name: Install Stable Cargo Toolchain (ensure we can support rust2024)
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: cargo
+
       # Widely adopted suite of Rust-specific boilerplate actions, especially
       # toolchain/cargo use: https://actions-rs.github.io/
       - name: Install Rust Toolchain
