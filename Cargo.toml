@@ -56,7 +56,7 @@ clap = { version = "4.5", features = ["derive","env"] }
 
 # New dependencies
 regex = "1.10.2"
-async-trait = "0.1.77"
+async-trait = "0.1.87"
 
 # Added from the code block
 chrono = "0.4"
