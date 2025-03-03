@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741020767531,
+  "lastUpdate": 1741035347030,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -556,6 +556,42 @@ window.BENCHMARK_DATA = {
           {
             "name": "write_power_reading",
             "value": 593,
+            "range": "± 1",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "61e73dfc3c0d1707e80cc5662931c3e71f5bd0ca",
+          "message": "Merge pull request #37 from jeckhart/dependabot/cargo/main/clap-4.5.31\n\nchore(deps): bump clap from 4.5.30 to 4.5.31",
+          "timestamp": "2025-03-03T15:54:19-05:00",
+          "tree_id": "ed4d72225c0c58694ce7739ae91ffd434c8cddec",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/61e73dfc3c0d1707e80cc5662931c3e71f5bd0ca"
+        },
+        "date": 1741035346228,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "message_into_reading",
+            "value": 615,
+            "range": "± 32",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "write_power_reading",
+            "value": 434,
             "range": "± 1",
             "unit": "ns/iter"
           }
