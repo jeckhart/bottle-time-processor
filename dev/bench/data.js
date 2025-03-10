@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741048092557,
+  "lastUpdate": 1741637845558,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -629,6 +629,42 @@ window.BENCHMARK_DATA = {
             "name": "write_power_reading",
             "value": 422,
             "range": "± 2",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2820b421e5b4b416aaac2dddf8ecba302cd48502",
+          "message": "Merge pull request #42 from jeckhart/dependabot/cargo/main/tokio-1.44.0\n\nchore(deps): bump tokio from 1.43.0 to 1.44.0",
+          "timestamp": "2025-03-10T16:15:27-04:00",
+          "tree_id": "3facb73d921de5e709ad22c64f082235e1069467",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/2820b421e5b4b416aaac2dddf8ecba302cd48502"
+        },
+        "date": 1741637844688,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "message_into_reading",
+            "value": 565,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "write_power_reading",
+            "value": 425,
+            "range": "± 1",
             "unit": "ns/iter"
           }
         ]
