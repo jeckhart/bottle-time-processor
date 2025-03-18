@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1741637845558,
+  "lastUpdate": 1742320895619,
   "repoUrl": "https://github.com/jeckhart/bottle-time-processor",
   "entries": {
     "Rust Benchmark": [
@@ -665,6 +665,42 @@ window.BENCHMARK_DATA = {
             "name": "write_power_reading",
             "value": 425,
             "range": "± 1",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jeckhart@hey.com",
+            "name": "John Eckhart",
+            "username": "jeckhart"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "48766ac056b56ec4cce9bfdb2d60989f57221f38",
+          "message": "Merge pull request #47 from jeckhart/dependabot/cargo/main/async-trait-0.1.88\n\nchore(deps): bump async-trait from 0.1.87 to 0.1.88",
+          "timestamp": "2025-03-18T13:57:28-04:00",
+          "tree_id": "04b9ff320d651e503b1e48dc8dc4f49d3bd854ff",
+          "url": "https://github.com/jeckhart/bottle-time-processor/commit/48766ac056b56ec4cce9bfdb2d60989f57221f38"
+        },
+        "date": 1742320894719,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "message_into_reading",
+            "value": 607,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "write_power_reading",
+            "value": 417,
+            "range": "± 3",
             "unit": "ns/iter"
           }
         ]
