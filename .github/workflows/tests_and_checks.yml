@@ -24,7 +24,7 @@ jobs:
           - "1.85"
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: ⚙️ Install libsystemd-dev
         run: |
@@ -95,7 +95,7 @@ jobs:
           - nightly
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: ⚙️ Install Environment Packages jq and libsystemd-dev
         run: |
